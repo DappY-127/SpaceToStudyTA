@@ -18,9 +18,14 @@ class BaseTestRunner(unittest.TestCase):
 
     @allure.step("innit web driver")
     def _init_driver(self):
-        self.driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()))
+        service = Service(ChromeDriverManager().install())
+        options = webdriver.ChromeOptions()
+        options.add_argument('--headless=new')
+        options.add_argument('--window-size=1920,1080')
+        self.driver = webdriver.Chrome(service=service, options=options)
+        # self.driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()))
         self.driver.implicitly_wait(IMPLICITLY_WAIT)
-        self.driver.maximize_window()
+        # self.driver.maximize_window()
         # self.addCleanup(self.driver.quit)
         self.driver.get(ValueProvider.get_base_url())
 
