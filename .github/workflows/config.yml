@@ -1,0 +1,60 @@
+name: UI Tests
+
+on: workflow_dispatch
+
+jobs:
+  ui-tests:
+    runs-on: ubuntu-latest
+
+    services:
+      spaceto_study:
+        image: python:3.12.0a4-alpine3.17
+        environment:
+          BASE_URL: ${{ secrets.BASE_URL }}
+          BASE_API_URL: ${{ secrets.BASE_API_URL }}
+          STUDENT_EMAIL: ${{ secrets.STUDENT_EMAIL }}
+          STUDENT_PASSWORD: ${{ secrets.STUDENT_PASSWORD }}
+          STUDENT_FIRST_NAME: ${{ secrets.STUDENT_FIRST_NAME }}
+          STUDENT_LAST_NAME: ${{ secrets.STUDENT_LAST_NAME }}
+          TUTOR_EMAIL: ${{ secrets.TUTOR_EMAIL }}
+          TUTOR_PASSWORD: ${{ secrets.TUTOR_PASSWORD }}
+          TUTOR_FIRST_NAME: ${{ secrets.TUTOR_FIRST_NAME }}
+          TUTOR_LAST_NAME: ${{ secrets.TUTOR_LAST_NAME }}
+          API_KEY_FOR_EMAILS: ${{ secrets.API_KEY_FOR_EMAILS }}
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Checkout (copy) gh-pages repository to GitHub runner
+        uses: actions/checkout@v2
+        with:
+          ref: gh-pages
+          path: ./.github/gh-pages
+
+      - name: Run UI-tests via docker-compose
+        env:
+          BASE_URL: ${{ secrets.BASE_URL }}
+          BASE_API_URL: ${{ secrets.BASE_API_URL }}
+          STUDENT_EMAIL: ${{ secrets.STUDENT_EMAIL }}
+          STUDENT_PASSWORD: ${{ secrets.STUDENT_PASSWORD }}
+          STUDENT_FIRST_NAME: ${{ secrets.STUDENT_FIRST_NAME }}
+          STUDENT_LAST_NAME: ${{ secrets.STUDENT_LAST_NAME }}
+          TUTOR_EMAIL: ${{ secrets.TUTOR_EMAIL }}
+          TUTOR_PASSWORD: ${{ secrets.TUTOR_PASSWORD }}
+          TUTOR_FIRST_NAME: ${{ secrets.TUTOR_FIRST_NAME }}
+          TUTOR_LAST_NAME: ${{ secrets.TUTOR_LAST_NAME }}
+          API_KEY_FOR_EMAILS: ${{ secrets.API_KEY_FOR_EMAILS }}
+        run: |
+          docker-compose up --exit-code-from spaceto_study || true
+
+      - name: Generate Allure report
+        run: |
+          sudo docker-compose run spaceto_study /bin/sh -c "allure generate allure-results --clean -o allure-report"
+
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@4.1.5
+        with:
+          token: ${{ secrets.CI_TOKEN }}
+          branch: gh-pages
+          folder: allure-report
+          clean: true

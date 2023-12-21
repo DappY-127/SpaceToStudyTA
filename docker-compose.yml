@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  spaceto_study:
+    image: python:3.12.0a4-alpine3.17
+    build:
+      context: .
+      dockerfile: Dockerfile  # Посилання на ваш Dockerfile
+    environment:
+      BASE_URL: ${BASE_URL}
+      BASE_API_URL: ${BASE_API_URL}
+      STUDENT_EMAIL: ${STUDENT_EMAIL}
+      STUDENT_PASSWORD: ${STUDENT_PASSWORD}
+      STUDENT_FIRST_NAME: ${STUDENT_FIRST_NAME}
+      STUDENT_LAST_NAME: ${STUDENT_LAST_NAME}
+      TUTOR_EMAIL: ${TUTOR_EMAIL}
+      TUTOR_PASSWORD: ${TUTOR_PASSWORD}
+      TUTOR_FIRST_NAME: ${TUTOR_FIRST_NAME}
+      TUTOR_LAST_NAME: ${TUTOR_LAST_NAME}
+      API_KEY_FOR_EMAILS: ${API_KEY_FOR_EMAILS}
+    volumes:
+      - ./:/usr/workspace  
+    command: bash -c "pylint ./SpaceToStudy && pytest --alluredir=./my_allure_results ./tests" 
+    working_dir: /usr/workspace 
+
